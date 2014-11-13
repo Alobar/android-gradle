@@ -21,18 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/*
-    Emulates manifest placeholder ${applicationId} in the xml resources directory.
 
-    Every file in the res/xml/ directory is searched for occurrences of '${applicationId}',
-    which is replaced by the actual applicationId string.
-
-    Copy this file into your project next to the module build.gradle file. Edit the module
-    build.gradle to look like this:
-
-        apply plugin: 'com.android.application'
-        apply from: './build_processApplicationId.gradle'
-
+/**
+ * Emulates manifest placeholder `${applicationId}` in xml resource files.
+ *
+ * This is useful when you want to be able to install all your build variants on the same device
+ * at the same time. You will not only have to declare a different applicationId in the
+ * AndroidManifest.xml, but if you are also using `ContentProvider` and/or `AccountManager`then
+ * you will need to declare different authorities and account types per build variant. There is
+ * out-of-the-box support for the ${applicationId} manifest placeholder in AndroidManifest.xml,
+ * but not for other xml resource files. This gradle script provides that missing support.
+ *
+ * Every file in the res/xml/ directory is searched for occurrences of '${applicationId}', which
+ * is replaced by the actual applicationId string of the build variant that is being built.
+ *
+ * Copy the file into your project next to the module build.gradle file and add an apply statement
+ * to build.gradle to invoke it. The top of the module build.gradle should look like this:
+ *
+ *     apply plugin: 'com.android.application'
+ *     apply from: './build_processApplicationId.gradle'
  */
 
 def replace(File file, String target, String replacement) {
