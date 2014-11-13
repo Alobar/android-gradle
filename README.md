@@ -14,7 +14,7 @@ Every file in the res/xml/ directory is searched for occurrences of '${applicati
 Copy the file into your project next to the module build.gradle file and add an apply statement to build.gradle to invoke it. The top of the module build.gradle should look like this:
 
     apply plugin: 'com.android.application'
-    apply from: './build_processApplicationId.gradle'
+    apply from: './build-processApplicationId.gradle'
 
 You can now use the applicationId placeholder in your xml resource files like you already could in the manifest file. For example, declare your ContentProvider like this in AndroidManifest.xml:
 
