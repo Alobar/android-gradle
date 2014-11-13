@@ -23,7 +23,15 @@ You can now use the applicationId placeholder in your xml resource files like yo
         android:authorities="${applicationId}.DatabaseProvider"
         android:exported="false" />
 
-Provide the Sync Adapter and Account Authenticator meta-data in a similar way:
+Note the `${applicationId}` bit. This is replaced at build time with the actual applicationId for the build variant that is beign built. Your ContentProvider needs to construct the authority string in code. It can use `BuildConfig.APPLICATION_ID`.
+
+    public class DatabaseContract {
+        /** The authority for the database provider */
+        public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".DatabaseProvider";
+        // ...
+    }
+
+The above is already possible in code and the manifest file but not in other xml resource files. You must provide the meta-data for a Sync Adapter and Account Authenticator in xml resource files and with this gradle script you can declare the authority and account type in an identical way:
 
     <sync-adapter xmlns:android="http://schemas.android.com/apk/res/android"
         android:accountType="${applicationId}"
@@ -39,4 +47,4 @@ Provide the Sync Adapter and Account Authenticator meta-data in a similar way:
         android:label="@string/account_authenticator_label"
         android:smallIcon="@drawable/ic_launcher" />
 
-Do not duplicate these files into different build variant source directories; it's much simpler maintaining a single version in the main source directory, and now you can.
+Again, note the `${applicationId}` bit. Before, you had to duplicate these files into different build variant source directories. Now it is much simpler. Just maintain a single version in the main source directory using a placeholder.
