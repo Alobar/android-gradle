@@ -9,6 +9,8 @@ This is useful when you want to be able to install all your build variants on th
 
 Every file in the res/xml/ directory is searched for occurrences of '${applicationId}', which is replaced by the actual applicationId string of the build variant that is being built.
 
+Improvements and extensions are welcome.
+
 *Usage*
 
 Copy the file into your project next to the module build.gradle file and add an apply statement to build.gradle to invoke it. The top of the module build.gradle should look like this:
