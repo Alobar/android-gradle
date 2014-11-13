@@ -1,0 +1,80 @@
+/**
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014 Alobar Productions
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+/*
+    Emulates manifest placeholder ${applicationId} in the xml resources directory.
+
+    Every file in the res/xml/ directory is searched for occurrences of '${applicationId}',
+    which is replaced by the actual applicationId string.
+
+    Copy this file into your project next to the module build.gradle file. Edit the module
+    build.gradle to look like this:
+
+        apply plugin: 'com.android.application'
+        apply from: './build_processApplicationId.gradle'
+
+ */
+
+def replace(File file, String target, String replacement) {
+    def result = false;
+
+    def reader = new FileReader(file)
+    def lines = reader.readLines()
+    reader.close()
+
+    def writer = new FileWriter(file)
+    lines.each { line ->
+        String replacedLine = line.replace(target, replacement)
+        writer.write(replacedLine)
+        writer.write("\n")
+        result = result || !replacedLine.equals(line)
+    }
+    writer.close()
+
+    return result
+}
+
+def processXmlFile(File file, String applicationId) {
+    if (replace(file, "\${applicationId}", applicationId)) {
+        logger.info("Processed \${applicationId} in $file")
+    }
+}
+
+def processXmlDir(File dir, String applicationId) {
+    dir.list().each { entry ->
+        File file = new File(dir, entry)
+        if (file.isFile()) {
+            processXmlFile(file, applicationId)
+        }
+    }
+}
+
+android.applicationVariants.all { variant ->
+
+    variant.mergeResources.doLast {
+        def applicationId = variant.mergedFlavor.applicationId + (variant.buildType.applicationIdSuffix == null ? "" : variant.buildType.applicationIdSuffix)
+        def path = "${buildDir}/intermediates/res/${variant.dirName}/xml/"
+        processXmlDir(new File(path), applicationId)
+    }
+
+}
