@@ -39,7 +39,7 @@
  * to build.gradle to invoke it. The top of the module build.gradle should look like this:
  *
  *     apply plugin: 'com.android.application'
- *     apply from: './build_processApplicationId.gradle'
+ *     apply from: './build-processApplicationId.gradle'
  */
 
 def replace(File file, String target, String replacement) {
@@ -68,6 +68,9 @@ def processXmlFile(File file, String applicationId) {
 }
 
 def processXmlDir(File dir, String applicationId) {
+    if (!dir.exists())
+        throw new IllegalArgumentException(String.format("Xml dir does not exists: '%s'", dir.toString()))
+
     dir.list().each { entry ->
         File file = new File(dir, entry)
         if (file.isFile()) {
@@ -77,11 +80,13 @@ def processXmlDir(File dir, String applicationId) {
 }
 
 android.applicationVariants.all { variant ->
-
-    variant.mergeResources.doLast {
-        def applicationId = variant.mergedFlavor.applicationId + (variant.buildType.applicationIdSuffix == null ? "" : variant.buildType.applicationIdSuffix)
-        def path = "${buildDir}/intermediates/res/${variant.dirName}/xml/"
-        processXmlDir(new File(path), applicationId)
+    try {
+        variant.mergeResources.doLast {
+            String applicationId = variant.mergedFlavor.applicationId + (variant.buildType.applicationIdSuffix == null ? "" : variant.buildType.applicationIdSuffix)
+            String path = "${buildDir}/intermediates/res/merged/${variant.dirName}/xml/"
+            processXmlDir(new File(path), applicationId)
+        }
+    } catch (Throwable ex) {
+        logger.log(LogLevel.ERROR, "Cannot process \${applicationId} in xml files", ex)
     }
-
 }
